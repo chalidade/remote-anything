@@ -103,9 +103,9 @@
       return;
     }
     $('folderInfo').innerHTML = dirHandle
-      ? `File dari HP tersimpan otomatis ke folder <b>${esc(dirHandle.name)}</b>.`
+      ? `Tersimpan otomatis ke folder <b>${esc(dirHandle.name || 'pilihan')}</b>.`
       : 'File dari HP akan langsung tersimpan ke folder ini. Wajib untuk backup galeri dari aplikasi.';
-    $('folderBtn').textContent = dirHandle ? 'Ganti folder' : 'Pilih folder';
+    $('folderBtnLabel').textContent = dirHandle ? 'Ganti folder' : 'Pilih folder';
   }
   async function initFolder() {
     if (!isHost) { $('folderCard').classList.add('hidden'); return; }
@@ -238,7 +238,7 @@
     const qr = qrcode(0, 'M');
     qr.addData(url);
     qr.make();
-    $('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+    $('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 0, scalable: true });
     $('joinLink').textContent = url;
   }
 
@@ -362,6 +362,16 @@
   $('text').onkeydown = (e) => { if (e.key === 'Enter') sendChat(); };
   $('fileBtn').onclick = () => $('file').click();
   $('file').onchange = () => { [...$('file').files].forEach(sendFile); $('file').value = ''; };
+  // Seret & lepas file ke kartu percakapan
+  let dragDepth = 0;
+  const card = $('chatCard');
+  card.addEventListener('dragenter', (e) => { if (!conn) return; e.preventDefault(); dragDepth++; $('drop').classList.remove('hidden'); });
+  card.addEventListener('dragover', (e) => { if (conn) e.preventDefault(); });
+  card.addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; $('drop').classList.add('hidden'); } });
+  card.addEventListener('drop', (e) => {
+    e.preventDefault(); dragDepth = 0; $('drop').classList.add('hidden');
+    [...(e.dataTransfer?.files || [])].forEach(sendFile);
+  });
   $('resetBtn').onclick = (e) => { e.preventDefault(); hostIdentity(true); location.reload(); };
 
   // Beri tahu pasangan saat tab ditutup, supaya laptop langsung kembali ke QR

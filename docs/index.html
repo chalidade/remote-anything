@@ -2,83 +2,225 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sambung HP ke Laptop</title>
 <link rel="icon" href="icon.svg">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1f6feb">
+<meta name="theme-color" content="#0b1020">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --text:#1b1f24; --muted:#5f6b7a; --line:#dde1e6; --accent:#1f6feb; --ok:#1a7f37; --warn:#9a6700; --me:#dbe9ff; --them:#eef0f3; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0e1116; --card:#161b22; --text:#e6edf3; --muted:#8d96a0; --line:#30363d; --accent:#4493f8; --ok:#3fb950; --warn:#d29922; --me:#1d3557; --them:#21262d; } }
-  * { box-sizing:border-box; }
-  body { margin:0; font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
-  main { max-width:720px; margin:0 auto; padding:16px; }
-  h1 { font-size:1.3rem; margin:8px 0 4px; }
-  .sub { color:var(--muted); margin:0 0 16px; font-size:.95rem; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
-  .status { display:flex; align-items:center; gap:8px; font-weight:600; }
-  .dot { width:10px; height:10px; border-radius:50%; background:var(--muted); flex:none; }
-  .dot.ok { background:var(--ok); } .dot.warn { background:var(--warn); }
-  .mode { color:var(--muted); font-weight:400; font-size:.9rem; }
-  #qr { display:flex; justify-content:center; margin:12px 0; }
-  #qr svg, #qr img { width:240px; height:240px; background:#fff; padding:8px; border-radius:8px; }
-  .link { word-break:break-all; text-align:center; font-family:ui-monospace,monospace; font-size:.9rem; }
-  select, input[type=text] { font:inherit; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); width:100%; }
-  button, .btn { font:inherit; padding:10px 14px; border:0; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; white-space:nowrap; }
-  button.secondary { background:transparent; color:var(--accent); border:1px solid var(--line); }
-  button:disabled { opacity:.5; cursor:default; }
-  #log { height:45vh; min-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:4px; }
-  .msg { max-width:85%; padding:8px 12px; border-radius:12px; background:var(--them); align-self:flex-start; word-wrap:break-word; }
-  .msg.me { background:var(--me); align-self:flex-end; }
-  .msg.sys { background:none; color:var(--muted); font-size:.85rem; align-self:center; text-align:center; }
-  .msg a { color:var(--accent); }
-  progress { width:100%; }
-  .row { display:flex; gap:8px; margin-top:12px; }
-  .hidden { display:none !important; }
-  .hint { color:var(--muted); font-size:.85rem; }
+  :root {
+    --bg: #f4f6fb; --bg-grad1: rgba(79,70,229,.14); --bg-grad2: rgba(14,165,233,.12);
+    --card: rgba(255,255,255,.82); --card-solid: #fff; --text: #0f172a; --muted: #64748b; --line: rgba(15,23,42,.08);
+    --accent: #4f46e5; --accent2: #0ea5e9; --accent-soft: rgba(79,70,229,.10);
+    --ok: #16a34a; --ok-soft: rgba(22,163,74,.12); --warn: #d97706; --warn-soft: rgba(217,119,6,.12);
+    --me: linear-gradient(135deg, #4f46e5, #0ea5e9); --them: #eef2f7;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 12px 32px -12px rgba(15,23,42,.18);
+    --radius: 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #070b16; --bg-grad1: rgba(99,102,241,.22); --bg-grad2: rgba(14,165,233,.16);
+      --card: rgba(17,24,39,.72); --card-solid: #111827; --text: #e5e7eb; --muted: #94a3b8; --line: rgba(255,255,255,.08);
+      --accent: #818cf8; --accent2: #38bdf8; --accent-soft: rgba(129,140,248,.14);
+      --ok: #4ade80; --ok-soft: rgba(74,222,128,.12); --warn: #fbbf24; --warn-soft: rgba(251,191,36,.12);
+      --them: #1f2937; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 40px -16px rgba(0,0,0,.6);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; color: var(--text); background: var(--bg);
+    font: 15px/1.55 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background-image: radial-gradient(60rem 40rem at 0% -10%, var(--bg-grad1), transparent 60%),
+                      radial-gradient(50rem 36rem at 110% 0%, var(--bg-grad2), transparent 60%);
+    background-attachment: fixed; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  a:hover { text-decoration: underline; }
+  .hidden { display: none !important; }
+
+  /* Header */
+  .top { max-width: 1080px; margin: 0 auto; padding: 20px 16px 8px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+  .logo { width: 40px; height: 40px; border-radius: 12px; background: var(--me); display: grid; place-items: center; box-shadow: 0 8px 20px -8px rgba(79,70,229,.7); }
+  .logo svg { width: 22px; height: 22px; }
+  .brand h1 { font-size: 1.15rem; margin: 0; font-weight: 800; letter-spacing: -.01em; }
+  .brand p { margin: 0; color: var(--muted); font-size: .82rem; }
+  .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line);
+            backdrop-filter: blur(12px); font-weight: 600; font-size: .88rem; box-shadow: var(--shadow); max-width: 100%; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 0 4px var(--ok-soft); }
+  .dot.warn { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-soft); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 7px transparent; } }
+  .mode { color: var(--muted); font-weight: 500; }
+
+  /* Layout */
+  main { max-width: 1080px; margin: 0 auto; padding: 8px 16px 32px; display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 900px) { main { grid-template-columns: 1.45fr 1fr; align-items: start; } #pairCard, #chatCard { grid-column: 1; } #folderCard { grid-column: 2; grid-row: 1; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); backdrop-filter: blur(16px); }
+  .card h2 { font-size: 1.05rem; margin: 0 0 4px; font-weight: 700; letter-spacing: -.01em; }
+  .hint { color: var(--muted); font-size: .86rem; margin: 6px 0 0; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: 8px; }
+
+  /* Pair card */
+  .pair { display: grid; gap: 24px; grid-template-columns: 1fr; align-items: center; }
+  @media (min-width: 640px) { .pair { grid-template-columns: auto 1fr; } }
+  .qrwrap { position: relative; justify-self: center; padding: 14px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 1px var(--line), 0 20px 40px -20px rgba(79,70,229,.55); }
+  .qrwrap::before { content: ""; position: absolute; inset: -2px; border-radius: 26px; padding: 2px; background: var(--me);
+                    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .7; }
+  #qr { width: 220px; height: 220px; display: grid; place-items: center; }
+  #qr svg { width: 220px; height: 220px; display: block; }
+  .steps { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; }
+  .steps li { display: flex; gap: 12px; align-items: flex-start; font-size: .92rem; }
+  .steps b { font-weight: 700; }
+  .num { flex: none; width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: .8rem; }
+  .link { margin-top: 16px; padding: 8px 12px; border-radius: 10px; background: var(--accent-soft); font: 500 .76rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); word-break: break-all; }
+  .pair-foot { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: .84rem; color: var(--muted); }
+
+  /* Folder card */
+  .folder-head { display: flex; gap: 14px; align-items: flex-start; }
+  .icon-tile { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+  .icon-tile svg { width: 22px; height: 22px; }
+  .features { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; font-size: .86rem; color: var(--muted); }
+  .features li { display: flex; gap: 8px; align-items: center; }
+  .features svg { width: 16px; height: 16px; color: var(--ok); flex: none; }
+
+  /* Buttons & inputs */
+  .row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  button { font: 600 .9rem/1 inherit; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border: 0; border-radius: 12px;
+           background: var(--me); color: #fff; cursor: pointer; white-space: nowrap; transition: transform .12s ease, box-shadow .2s ease, background .2s ease; box-shadow: 0 8px 18px -10px rgba(79,70,229,.8); }
+  button:hover { transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+  button.secondary { background: var(--card-solid); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+  button.secondary:hover { border-color: var(--accent); color: var(--accent); }
+  button svg { width: 18px; height: 18px; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+  input[type=text] { flex: 1; min-width: 0; font: inherit; padding: 12px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card-solid); color: var(--text); }
+  input[type=text]:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 4px var(--accent-soft); }
+
+  /* Chat */
+  .chat { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .chat-head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .chat-head .hint { margin: 0; }
+  #log { height: min(56vh, 560px); min-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 20px; scroll-behavior: smooth; }
+  .msg { max-width: min(80%, 460px); padding: 10px 14px; border-radius: 18px 18px 18px 6px; background: var(--them); align-self: flex-start; word-wrap: break-word; font-size: .93rem; animation: pop .18s ease-out; }
+  .msg.me { background: var(--me); color: #fff; align-self: flex-end; border-radius: 18px 18px 6px 18px; }
+  .msg.me a { color: #fff; text-decoration: underline; }
+  .msg.sys { background: var(--accent-soft); color: var(--accent); font-size: .78rem; font-weight: 600; align-self: center; border-radius: 999px; padding: 6px 12px; }
+  .msg a { color: var(--accent); }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(.98); } }
+  progress { width: 100%; height: 6px; margin-top: 8px; appearance: none; border: 0; border-radius: 99px; background: rgba(127,127,127,.25); overflow: hidden; display: block; }
+  progress::-webkit-progress-bar { background: rgba(127,127,127,.25); border-radius: 99px; }
+  progress::-webkit-progress-value { background: var(--accent2); border-radius: 99px; }
+  progress::-moz-progress-bar { background: var(--accent2); border-radius: 99px; }
+  .msg.me progress::-webkit-progress-value { background: #fff; }
+  .msg.me progress::-moz-progress-bar { background: #fff; }
+  .composer { display: flex; gap: 8px; padding: 14px; border-top: 1px solid var(--line); align-items: center; }
+  .composer button { padding: 12px; }
+  .icon-btn { width: 46px; height: 46px; padding: 0 !important; flex: none; }
+  .drop { position: absolute; inset: 0; display: grid; place-items: center; border: 2px dashed var(--accent); border-radius: var(--radius); background: var(--accent-soft); color: var(--accent); font-weight: 700; pointer-events: none; }
+  #chatCard { position: relative; }
+
+  footer { max-width: 1080px; margin: 0 auto; padding: 0 16px 28px; color: var(--muted); font-size: .8rem; display: flex; gap: 6px 16px; flex-wrap: wrap; }
+  footer svg { width: 14px; height: 14px; vertical-align: -2px; }
+  @media (max-width: 480px) { .card { padding: 18px; } .top { padding-top: 14px; } #qr, #qr svg { width: 200px; height: 200px; } }
 </style>
 </head>
 <body>
+<header class="top">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="13" height="10" rx="1.5"/><path d="M1 18h15"/><rect x="17" y="7" width="6" height="12" rx="1.5"/></svg>
+    </div>
+    <div>
+      <h1>Sambung</h1>
+      <p>HP ↔ laptop, langsung tanpa kabel</p>
+    </div>
+  </div>
+  <div class="status" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="status">Menyiapkan…</span><span class="mode" id="mode"></span></div>
+</header>
+
 <main>
-  <h1>Sambung HP ke Laptop</h1>
-  <p class="sub">Pairing pakai QR, lalu kirim chat dan file langsung antar perangkat (WebRTC).</p>
+  <section class="card" id="pairCard">
+    <div class="pair">
+      <div class="qrwrap"><div id="qr" aria-label="QR pairing"></div></div>
+      <div>
+        <span class="eyebrow">Pairing</span>
+        <h2>Sambungkan HP-mu</h2>
+        <ol class="steps">
+          <li><span class="num">1</span><span>Buka <b>aplikasi Sambung</b> untuk backup galeri, atau <b>kamera HP</b> untuk chat &amp; kirim file lewat browser.</span></li>
+          <li><span class="num">2</span><span>Scan QR di samping.</span></li>
+          <li><span class="num">3</span><span>Selesai. Data mengalir langsung antar perangkat.</span></li>
+        </ol>
+        <div class="link" id="joinLink"></div>
+        <div class="pair-foot">
+          <span>Butuh internet sebentar saat pairing.</span>
+          <a href="#" id="resetBtn">Buat QR baru</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <div class="card">
-    <div class="status"><span class="dot" id="dot"></span><span id="status">Menyiapkan…</span> <span class="mode" id="mode"></span></div>
-  </div>
-
-  <div class="card" id="pairCard">
-    <strong>Scan QR ini pakai kamera HP</strong>
-    <div id="qr"></div>
-    <div class="link" id="joinLink"></div>
-    <p class="hint">Scan pakai kamera HP (buka di browser), atau dari aplikasi Sambung untuk backup galeri.
-      Kedua perangkat butuh internet sebentar untuk pairing. Setelah tersambung, data dikirim langsung antar perangkat.</p>
-    <p class="hint"><a href="#" id="resetBtn">Buat QR baru</a> (HP yang sudah pair harus scan ulang)</p>
-  </div>
-
-  <div class="card" id="folderCard">
-    <strong>Simpan otomatis ke folder</strong>
-    <p class="hint" id="folderInfo">File dari HP akan langsung tersimpan ke folder ini. Wajib untuk backup galeri dari aplikasi.</p>
+  <section class="card" id="folderCard">
+    <div class="folder-head">
+      <div class="icon-tile" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </div>
+      <div>
+        <span class="eyebrow">Backup</span>
+        <h2>Simpan otomatis ke folder</h2>
+        <p class="hint" id="folderInfo">File dari HP akan langsung tersimpan ke folder ini. Wajib untuk backup galeri dari aplikasi.</p>
+      </div>
+    </div>
     <div class="row">
-      <button class="secondary" id="folderBtn">Pilih folder</button>
+      <button id="folderBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v6M9 14h6"/></svg>
+        <span id="folderBtnLabel">Pilih folder</span>
+      </button>
       <button class="secondary hidden" id="folderAllowBtn">Izinkan akses folder lagi</button>
     </div>
-  </div>
+    <ul class="features">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Struktur folder sama seperti di HP</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>File yang sudah ada dilewati</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tanpa cloud, tanpa batas kuota</li>
+    </ul>
+  </section>
 
-  <div class="card hidden" id="chatCard">
+  <section class="card chat hidden" id="chatCard">
+    <div class="chat-head">
+      <div class="icon-tile" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+      </div>
+      <div>
+        <h2>Percakapan</h2>
+        <p class="hint">Kirim pesan atau seret file ke sini</p>
+      </div>
+    </div>
     <div id="log"></div>
-    <div class="row">
-      <input type="text" id="text" placeholder="Tulis pesan…" autocomplete="off">
-      <button id="sendBtn">Kirim</button>
-    </div>
-    <div class="row">
+    <div class="composer">
       <input type="file" id="file" multiple class="hidden">
-      <button class="secondary" id="fileBtn">Kirim file</button>
+      <button class="secondary icon-btn" id="fileBtn" title="Kirim file" aria-label="Kirim file">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 11-8.6 8.6a5 5 0 0 1-7-7l8.5-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.3-2.4l7.9-7.9"/></svg>
+      </button>
+      <input type="text" id="text" placeholder="Tulis pesan…" autocomplete="off">
+      <button class="icon-btn" id="sendBtn" title="Kirim" aria-label="Kirim pesan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+      </button>
     </div>
-  </div>
+    <div class="drop hidden" id="drop">Lepas untuk mengirim</div>
+  </section>
 </main>
+
+<footer>
+  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Terenkripsi WebRTC, file tidak lewat server</span>
+  <a href="https://github.com/chalidade/remote-anything">Kode sumber &amp; aplikasi Android</a>
+</footer>
+
 <script src="qrcode.js"></script>
 <script src="peerjs.min.js"></script>
-<script src="app.js?v=1.1.0"></script>
+<script src="app.js?v=1.2.0"></script>
 </body>
 </html>
