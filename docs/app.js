@@ -41,14 +41,20 @@
     $('dot').className = 'dot' + (kind ? ' ' + kind : '');
     $('mode').textContent = modeText || '';
   }
+  const TICKS = '<svg class="ticks" viewBox="0 0 16 11" aria-hidden="true"><path d="M11.1.6 4.8 6.9 2 4.1.9 5.2l3.9 3.9L12.2 1.7z"/><path d="m14.9.6-6.3 6.3-.8-.8-1.1 1.1 1.9 1.9 7.4-7.4z"/></svg>';
   function addMsg(html, cls) {
     const d = document.createElement('div');
     d.className = 'msg ' + (cls || '');
-    d.innerHTML = html;
+    if (cls === 'sys') d.innerHTML = html;
+    else {
+      const t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      d.innerHTML = `<div class="body">${html}</div><span class="meta">${t}${cls === 'me' ? TICKS : ''}</span>`;
+    }
     $('log').appendChild(d);
     $('log').scrollTop = $('log').scrollHeight;
     return d;
   }
+  const setBody = (el, html) => { (el.querySelector('.body') || el).innerHTML = html; };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmtSize = (n) => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
 
@@ -63,6 +69,9 @@
     const route = await routeType();
     const label = route === 'relay' ? 'lewat server TURN (relay)' : 'P2P langsung (WebRTC)';
     setStatus('Terhubung' + (isHost ? ' dengan ' + peerName : ''), 'ok', '· ' + label);
+    $('chatName').textContent = isHost ? peerName : 'Laptop';
+    $('chatAvatar').textContent = (isHost ? peerName : 'L').trim().charAt(0).toUpperCase() || 'H';
+    $('chatSub').textContent = 'online · ' + label;
     addMsg('Terhubung ' + label, 'sys');
   }
   async function routeType() {
@@ -312,11 +321,11 @@
             incoming.backupCount = (incoming.backupCount || 0) + 1;
             f.el.querySelector('.fname').textContent = `Backup dari ${peerName}: ${incoming.backupCount} file tersimpan (terakhir: ${f.meta.path || f.meta.name})`;
           } else {
-            f.el.innerHTML = `📄 ${esc(f.meta.name)} (${fmtSize(f.meta.size)}) ✓ tersimpan di <b>${esc(dirHandle.name)}/${esc(f.savedAs)}</b>`;
+            setBody(f.el, `📄 ${esc(f.meta.name)} (${fmtSize(f.meta.size)})<br><small>Tersimpan di ${esc(dirHandle.name ? dirHandle.name + '/' : '')}${esc(f.savedAs)}</small>`);
           }
         } else {
           const url = URL.createObjectURL(new Blob(f.parts, { type: f.meta.type || 'application/octet-stream' }));
-          f.el.innerHTML = `📄 <a href="${url}" download="${esc(f.meta.name)}">${esc(f.meta.name)}</a> (${fmtSize(f.meta.size)})`;
+          setBody(f.el, `📄 <a href="${url}" download="${esc(f.meta.name)}">${esc(f.meta.name)}</a> (${fmtSize(f.meta.size)})`);
         }
         send({ t: 'ack', id: m.id, saved: true });
       } catch (e) {
@@ -355,7 +364,7 @@
       bar.value = Math.min(off + CHUNK, file.size);
     }
     send({ t: 'file-end', id });
-    el.innerHTML = `📄 ${esc(file.name)} (${fmtSize(file.size)}) ✓ terkirim`;
+    setBody(el, `📄 ${esc(file.name)} (${fmtSize(file.size)})`);
   }
 
   $('sendBtn').onclick = sendChat;
