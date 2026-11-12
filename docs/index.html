@@ -120,6 +120,26 @@
   .iconbtn.send { color: var(--icon); }
   .drop { position: absolute; inset: 59px 0 62px 0; display: grid; place-items: center; background: rgba(0,168,132,.12); border: 2px dashed var(--accent); color: var(--accent-text); font-size: 16px; font-weight: 500; pointer-events: none; }
 
+  /* Daftar perangkat */
+  .dev { display: flex; gap: 14px; padding: 0 0 0 13px; align-items: center; cursor: pointer; outline: none; }
+  .dev:hover, .dev:focus-visible { background: var(--hover); }
+  .dev.active { background: var(--panel-head); }
+  .dev .avatar { position: relative; width: 49px; height: 49px; font-size: 19px; }
+  .dev .avatar .online { position: absolute; right: 0; bottom: 1px; width: 12px; height: 12px; border-radius: 50%; background: var(--ok); border: 2px solid var(--panel); }
+  .dev .text { flex: 1; min-width: 0; padding: 13px 15px 13px 0; border-bottom: 1px solid var(--line); }
+  .dev .row1, .dev .row2 { display: flex; align-items: center; gap: 8px; }
+  .dev .name { flex: 1; min-width: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dev .when { font-size: 12px; color: var(--muted); }
+  .dev .last { flex: 1; min-width: 0; font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .dev .badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ok); color: #fff; font-size: 12px; font-weight: 600; display: grid; place-items: center; }
+  .dev:has(.badge) .when { color: var(--ok); font-weight: 500; }
+  .newdev .avatar { background: var(--accent); }
+  .newdev .name { color: var(--text); }
+  .hint { padding: 10px 16px 4px 76px; font-size: 13px; color: var(--muted); }
+  .thread { display: flex; flex-direction: column; gap: 2px; }
+  #backBtn { margin-left: -10px; }
+  @media (min-width: 900px) { #backBtn { display: none; } }
+
   /* HP / layar sempit: sidebar jadi bagian atas, panel di bawah */
   @media (max-width: 899px) {
     body::before { display: none; }
@@ -141,6 +161,11 @@
     body.guest .side-scroll { display: none; }
     body.guest #chatCard .bar { display: none; }
     body.guest #chatCard { height: calc(100dvh - 104px); }
+    body.in-chat:not(.guest) .side { display: none; }
+    body.in-chat:not(.guest) #chatCard { height: 100dvh; }
+    body.in-chat:not(.guest) .main { min-height: 100dvh; }
+    body.in-chat:not(.guest) #chatCard .bar { background: var(--head); color: #fff; }
+    body.in-chat:not(.guest) #chatCard .bar .sub, body.in-chat:not(.guest) #backBtn { color: rgba(255,255,255,.9); }
   }
 </style>
 </head>
@@ -159,6 +184,15 @@
     <div class="statusrow" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="status">Menyiapkan…</span><span class="mode" id="mode"></span></div>
 
     <div class="side-scroll">
+      <div id="devSection">
+        <div class="section-title">Perangkat</div>
+        <div class="dev newdev" id="newDev" role="button" tabindex="0">
+          <div class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="text"><div class="row1"><span class="name">Sambungkan HP baru</span></div><div class="row2"><span class="last">Tampilkan kode QR</span></div></div>
+        </div>
+        <div id="devList"></div>
+        <div class="hint" id="devEmpty">Belum ada HP. Bisa banyak HP sekaligus, scan QR yang sama.</div>
+      </div>
       <div id="folderCard">
         <div class="section-title">Backup</div>
         <div class="item">
@@ -212,6 +246,7 @@
 
     <section id="chatCard" class="hidden">
       <div class="bar">
+        <button class="iconbtn" id="backBtn" title="Kembali" aria-label="Kembali"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
         <div class="avatar peer" id="chatAvatar">H</div>
         <div class="grow">
           <div class="title" id="chatName">HP</div>
@@ -237,6 +272,6 @@
 <script>if (location.hash.length > 1) document.body.classList.add('guest');</script>
 <script src="qrcode.js"></script>
 <script src="peerjs.min.js"></script>
-<script src="app.js?v=1.3.0"></script>
+<script src="app.js?v=1.4.0"></script>
 </body>
 </html>
