@@ -59,7 +59,7 @@ Tanpa aplikasi apa pun di HP:
 Data dikirim P2P lewat WebRTC di jaringan lokal. Kalau P2P gagal dalam 10 detik, otomatis
 pindah ke mode relay lewat server laptop.
 
-Versi tanpa server (GitHub Pages) ada di `docs/`; lihat [docs/README.md](docs/README.md).
+Versi tanpa server (GitHub Pages) langsung bisa dipakai di **https://chalidade.github.io/remote-anything/** (kode di `docs/`).
 
 ## Kenapa bukan Wi-Fi Direct / Wi-Fi Aware / Bluetooth?
 
