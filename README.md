@@ -6,7 +6,7 @@ serta chat dan kirim file dua arah dari browser.
 | Bagian | Isi | Butuh |
 |---|---|---|
 | `server.js`, `backup-api.js`, `public/` | Server di laptop: penerima backup + web app chat/kirim file | Node.js 18+ di laptop |
-| `android-app/` | Aplikasi Android **Sambung** (Flutter) untuk backup galeri | APK di [Releases](../../releases) |
+| `android-app/`, `apk/` | Aplikasi Android **Sambung** (Flutter) untuk backup galeri | APK di folder [`apk/`](apk) |
 | `docs/` | Versi web statis (GitHub Pages), tanpa server sendiri | Internet saat pairing |
 
 ## Mulai cepat: backup HP ke laptop
@@ -24,8 +24,8 @@ Lalu buka `http://localhost:8080/backup.html`. Muncul QR pairing.
 
 **Di HP**
 
-1. Unduh APK dari halaman [Releases](../../releases) (`Sambung-…-arm64.apk`).
-   Kalau gagal dipasang, pakai versi `universal`.
+1. Unduh [`apk/Sambung-1.0.0-arm64.apk`](apk/Sambung-1.0.0-arm64.apk) di HP
+   (buka tautannya lalu tekan *View raw* / *Download*).
 2. Pasang APK (izinkan "Instal dari sumber tidak dikenal"). Kalau Play Protect memberi
    peringatan, pilih "Tetap instal".
 3. Buka **Sambung**, tekan **Pair dengan laptop**, scan QR di laptop.

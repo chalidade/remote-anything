@@ -1,4 +1,5 @@
 node_modules/
 *.apk
+!apk/*.apk
 .DS_Store
 *.part-*
