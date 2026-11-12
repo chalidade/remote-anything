@@ -8,7 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api.dart';
 import 'backup.dart';
 import 'pairing.dart';
+import 'peer_link.dart';
 import 'scan_screen.dart';
+import 'transport.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.info, required this.onUnpair});
@@ -22,7 +24,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _backup = BackupService();
   late PairInfo _info = widget.info;
-  String? _host; // alamat laptop yang sedang terjangkau
+  String? _host; // alamat laptop yang sedang terjangkau (mode server)
+  PeerLink? _link; // koneksi ke halaman web laptop (mode web)
   String? _connError;
   bool _checking = false;
   bool _includeVideos = true;
@@ -57,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _checking = true;
       _connError = null;
     });
+    if (_info.isWeb) return _connectWeb();
     try {
       final hello = await findLaptop(_info);
       _info.lastHost = hello.host;
@@ -72,12 +76,46 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  LaptopClient _client() => LaptopClient(host: _host!, port: _info.port, token: _info.token, device: _device);
+  Future<void> _connectWeb() async {
+    _link?.close();
+    _link = null;
+    try {
+      final link = await PeerLink.connect(hostId: _info.peerId, key: _info.peerKey, deviceName: _device, server: _info.peerServer);
+      _link = link;
+      setState(() => _host = 'lewat browser');
+      link.closed.then((reason) {
+        if (!mounted || _link != link) return;
+        setState(() {
+          _host = null;
+          _connError = reason;
+        });
+      });
+    } catch (e) {
+      setState(() {
+        _host = null;
+        _connError = e.toString();
+      });
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _link?.close();
+    super.dispose();
+  }
+
+  Transport _client() => _info.isWeb ? _link! : LaptopClient(host: _host!, port: _info.port, token: _info.token, device: _device);
+
+  void _release(Transport c) {
+    if (!_info.isWeb) c.close();
+  }
 
   Future<void> _runBackup() async {
     final c = _client();
     await _backup.backupGallery(c, includeVideos: _includeVideos);
-    c.close();
+    _release(c);
   }
 
   Future<void> _sendFiles() async {
@@ -86,13 +124,18 @@ class _HomeScreenState extends State<HomeScreen> {
     if (files.isEmpty) return;
     final c = _client();
     await _backup.sendFiles(c, files);
-    c.close();
+    _release(c);
   }
 
   Future<void> _rePair() async {
     final info = await Navigator.of(context).push<PairInfo>(MaterialPageRoute(builder: (_) => const ScanScreen()));
     if (info != null) {
-      setState(() => _info = info);
+      _link?.close();
+      _link = null;
+      setState(() {
+        _info = info;
+        _host = null;
+      });
       await _connect();
     }
   }
@@ -180,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           if (s.phase != JobPhase.idle) _JobCard(state: s, onCancel: _backup.cancel),
           const SizedBox(height: 16),
-          Text('Folder di laptop: SambungBackup/$_device', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+          Text(_info.isWeb ? 'Disimpan ke folder yang dipilih di halaman laptop, subfolder $_device' : 'Folder di laptop: SambungBackup/$_device', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
           Text('Layar tetap menyala selama backup. Jangan tutup aplikasi.', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
         ]),
       ),

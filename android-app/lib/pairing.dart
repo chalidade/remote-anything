@@ -4,35 +4,83 @@ import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Data pairing yang dibaca dari QR di laptop: sambung://pair?hosts=..&port=..&token=..&name=..
-class PairInfo {
-  PairInfo({required this.hosts, required this.port, required this.token, required this.name, this.lastHost});
+import 'peer_link.dart';
 
+/// Data pairing yang dibaca dari QR di laptop. Dua jenis:
+/// - server lokal: sambung://pair?hosts=..&port=..&token=..&name=..
+/// - halaman web (GitHub Pages): `https://…/#idLaptop.kunci` (opsional `?server=host:port`)
+class PairInfo {
+  PairInfo({
+    this.kind = 'server',
+    this.hosts = const [],
+    this.port = 0,
+    this.token = '',
+    required this.name,
+    this.lastHost,
+    this.peerId = '',
+    this.peerKey = '',
+    this.peerServer = PeerServer.cloud,
+  });
+
+  final String kind; // 'server' | 'web'
   final List<String> hosts;
   final int port;
   final String token;
   final String name;
   String? lastHost; // alamat yang terakhir berhasil
+  final String peerId;
+  final String peerKey;
+  final PeerServer peerServer;
+
+  bool get isWeb => kind == 'web';
 
   static PairInfo? fromQr(String raw) {
     final uri = Uri.tryParse(raw.trim());
-    if (uri == null || uri.scheme != 'sambung' || uri.host != 'pair') return null;
-    final q = uri.queryParameters;
-    final hosts = (q['hosts'] ?? '').split(',').where((h) => h.isNotEmpty).toList();
-    final port = int.tryParse(q['port'] ?? '');
-    final token = q['token'];
-    if (hosts.isEmpty || port == null || token == null || token.isEmpty) return null;
-    return PairInfo(hosts: hosts, port: port, token: token, name: q['name'] ?? 'Laptop');
+    if (uri == null) return null;
+    if (uri.scheme == 'sambung' && uri.host == 'pair') {
+      final q = uri.queryParameters;
+      final hosts = (q['hosts'] ?? '').split(',').where((h) => h.isNotEmpty).toList();
+      final port = int.tryParse(q['port'] ?? '');
+      final token = q['token'];
+      if (hosts.isEmpty || port == null || token == null || token.isEmpty) return null;
+      return PairInfo(hosts: hosts, port: port, token: token, name: q['name'] ?? 'Laptop');
+    }
+    if ((uri.scheme == 'https' || uri.scheme == 'http') && uri.fragment.isNotEmpty) {
+      final parts = uri.fragment.split('.');
+      if (parts.length != 2 || !parts[0].startsWith('sambung-hp-') || parts[1].isEmpty) return null;
+      var server = PeerServer.cloud;
+      final custom = uri.queryParameters['server'];
+      if (custom != null && custom.isNotEmpty) {
+        final hp = custom.split(':');
+        server = PeerServer(host: hp[0], port: hp.length > 1 ? int.tryParse(hp[1]) ?? 443 : 443, secure: uri.scheme == 'https');
+      }
+      return PairInfo(kind: 'web', name: 'Laptop (${uri.host})', peerId: parts[0], peerKey: parts[1], peerServer: server);
+    }
+    return null;
   }
 
-  Map<String, dynamic> toJson() => {'hosts': hosts, 'port': port, 'token': token, 'name': name, 'lastHost': lastHost};
+  Map<String, dynamic> toJson() => {
+        'kind': kind,
+        'hosts': hosts,
+        'port': port,
+        'token': token,
+        'name': name,
+        'lastHost': lastHost,
+        'peerId': peerId,
+        'peerKey': peerKey,
+        'peerServer': peerServer.toJson(),
+      };
 
   static PairInfo fromJson(Map<String, dynamic> j) => PairInfo(
-        hosts: List<String>.from(j['hosts'] as List),
-        port: j['port'] as int,
-        token: j['token'] as String,
+        kind: j['kind'] as String? ?? 'server',
+        hosts: List<String>.from(j['hosts'] as List? ?? const []),
+        port: j['port'] as int? ?? 0,
+        token: j['token'] as String? ?? '',
         name: j['name'] as String,
         lastHost: j['lastHost'] as String?,
+        peerId: j['peerId'] as String? ?? '',
+        peerKey: j['peerKey'] as String? ?? '',
+        peerServer: j['peerServer'] == null ? PeerServer.cloud : PeerServer.fromJson(Map<String, dynamic>.from(j['peerServer'] as Map)),
       );
 
   static const _key = 'pair_info';

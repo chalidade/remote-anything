@@ -22,7 +22,13 @@ class _ScanScreenState extends State<ScanScreen> {
     if (raw == null) return;
     final info = PairInfo.fromQr(raw);
     if (info == null) {
-      setState(() => _message = 'Ini bukan QR Sambung. Buka /backup.html di laptop.');
+      setState(() => _message = 'Ini bukan QR Sambung. Scan QR dari halaman Sambung di laptop.');
+      return;
+    }
+    if (info.isWeb) {
+      // Koneksi ke halaman web dibuka di beranda
+      await info.save();
+      if (mounted) Navigator.of(context).pop(info);
       return;
     }
     setState(() {
@@ -59,7 +65,7 @@ class _ScanScreenState extends State<ScanScreen> {
           padding: const EdgeInsets.all(16),
           child: Row(children: [
             if (_busy) const Padding(padding: EdgeInsets.only(right: 12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-            Expanded(child: Text(_message ?? 'Arahkan kamera ke QR di halaman backup laptop.')),
+            Expanded(child: Text(_message ?? 'Arahkan kamera ke QR di halaman Sambung di laptop (chalidade.github.io/remote-anything atau /backup.html).')),
           ]),
         ),
       ]),

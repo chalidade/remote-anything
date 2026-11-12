@@ -51,7 +51,18 @@
     <strong>Scan QR ini pakai kamera HP</strong>
     <div id="qr"></div>
     <div class="link" id="joinLink"></div>
-    <p class="hint">Kedua perangkat butuh internet sebentar untuk pairing. Setelah tersambung, data dikirim langsung antar perangkat.</p>
+    <p class="hint">Scan pakai kamera HP (buka di browser), atau dari aplikasi Sambung untuk backup galeri.
+      Kedua perangkat butuh internet sebentar untuk pairing. Setelah tersambung, data dikirim langsung antar perangkat.</p>
+    <p class="hint"><a href="#" id="resetBtn">Buat QR baru</a> (HP yang sudah pair harus scan ulang)</p>
+  </div>
+
+  <div class="card" id="folderCard">
+    <strong>Simpan otomatis ke folder</strong>
+    <p class="hint" id="folderInfo">File dari HP akan langsung tersimpan ke folder ini. Wajib untuk backup galeri dari aplikasi.</p>
+    <div class="row">
+      <button class="secondary" id="folderBtn">Pilih folder</button>
+      <button class="secondary hidden" id="folderAllowBtn">Izinkan akses folder lagi</button>
+    </div>
   </div>
 
   <div class="card hidden" id="chatCard">

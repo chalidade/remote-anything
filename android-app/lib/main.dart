@@ -83,9 +83,9 @@ class WelcomePage extends StatelessWidget {
               Text('Backup foto & video dari HP ke laptop sendiri, tanpa cloud dan tanpa kuota.',
                   style: t.bodyLarge, textAlign: TextAlign.center),
               const Spacer(),
-              const _Step(n: 1, text: 'Di laptop, jalankan server Sambung (node server.js).'),
-              const _Step(n: 2, text: 'Buka http://localhost:8080/backup.html di laptop.'),
-              const _Step(n: 3, text: 'Pastikan HP dan laptop di Wi-Fi yang sama, lalu scan QR-nya.'),
+              const _Step(n: 1, text: 'Di laptop, buka chalidade.github.io/remote-anything di Chrome/Edge, lalu tekan "Pilih folder".'),
+              const _Step(n: 2, text: 'Atau jalankan server Sambung (npm start) dan buka localhost:8080/backup.html.'),
+              const _Step(n: 3, text: 'Tekan tombol di bawah dan scan QR yang muncul di laptop.'),
               const SizedBox(height: 24),
               FilledButton.icon(
                 icon: const Icon(Icons.qr_code_scanner),

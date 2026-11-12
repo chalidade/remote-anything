@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-import 'api.dart';
+import 'transport.dart';
 
 enum JobPhase { idle, scanning, uploading, done, failed }
 
@@ -50,7 +50,7 @@ class BackupService extends ChangeNotifier {
   }
 
   /// Backup galeri (foto, dan video jika diizinkan) ke laptop. File yang sudah ada dilewati.
-  Future<void> backupGallery(LaptopClient client, {bool includeVideos = true}) async {
+  Future<void> backupGallery(Transport client, {bool includeVideos = true}) async {
     _reset('Backup galeri');
     await WakelockPlus.enable();
     try {
@@ -82,7 +82,9 @@ class BackupService extends ChangeNotifier {
           final rel = dir.isEmpty ? name : '$dir/$name';
           batch.add(_Item(f, rel, await f.length(), a.createDateTime.millisecondsSinceEpoch));
         }
-        final needIdx = await client.check([for (final b in batch) (path: b.relPath, size: b.size)]);
+        final res = await client.check([for (final b in batch) (path: b.relPath, size: b.size)]);
+        if (!res.canSave) throw 'Di laptop, tekan "Pilih folder" di halaman Sambung dulu supaya backup bisa disimpan.';
+        final needIdx = res.need;
         for (var i = 0; i < batch.length; i++) {
           if (needIdx.contains(i)) {
             need.add(batch[i]);
@@ -104,7 +106,7 @@ class BackupService extends ChangeNotifier {
   }
 
   /// Kirim file pilihan ke folder "Kiriman" di laptop.
-  Future<void> sendFiles(LaptopClient client, List<File> files) async {
+  Future<void> sendFiles(Transport client, List<File> files) async {
     _reset('Kirim file');
     await WakelockPlus.enable();
     try {
@@ -122,7 +124,7 @@ class BackupService extends ChangeNotifier {
     }
   }
 
-  Future<void> _uploadAll(LaptopClient client, List<_Item> items, {required bool send}) async {
+  Future<void> _uploadAll(Transport client, List<_Item> items, {required bool send}) async {
     state
       ..phase = JobPhase.uploading
       ..toSend = items.length
@@ -156,11 +158,12 @@ class BackupService extends ChangeNotifier {
           break;
         } catch (e) {
           attempt++;
-          if (attempt < 3 && !_cancel) {
+          if (attempt < 3 && !_cancel && !isFatal(e)) {
             state.sentBytes = base;
             await Future.delayed(Duration(seconds: attempt * 2));
             continue;
           }
+          if (isFatal(e)) rethrow;
           state.failed++;
           state.failures.add('${item.relPath}: $e');
           state.sentBytes = base + item.size;
@@ -178,5 +181,12 @@ class BackupService extends ChangeNotifier {
     state
       ..phase = JobPhase.failed
       ..error = e is SocketException ? 'Koneksi ke laptop terputus.' : e.toString();
+    // Pengiriman tanpa koneksi tidak perlu diulang
+  }
+
+  /// Dipakai untuk retry: transport yang sudah putus tidak perlu dicoba lagi.
+  static bool isFatal(Object e) {
+    final s = e.toString();
+    return s.contains('terputus') || s.contains('Pilih folder');
   }
 }

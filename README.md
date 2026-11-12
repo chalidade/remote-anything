@@ -1,47 +1,52 @@
 # Sambung: HP ↔ laptop
 
-Kumpulan alat untuk menyambungkan HP dan laptop: backup galeri HP ke laptop lewat Wi-Fi,
+Kumpulan alat untuk menyambungkan HP dan laptop: backup galeri HP ke laptop,
 serta chat dan kirim file dua arah dari browser.
 
 | Bagian | Isi | Butuh |
 |---|---|---|
 | `server.js`, `backup-api.js`, `public/` | Server di laptop: penerima backup + web app chat/kirim file | Node.js 18+ di laptop |
 | `android-app/`, `apk/` | Aplikasi Android **Sambung** (Flutter) untuk backup galeri | APK di folder [`apk/`](apk) |
-| `docs/` | Versi web statis (GitHub Pages), tanpa server sendiri | Internet saat pairing |
+| `docs/` | Halaman web (GitHub Pages): penerima backup tanpa server + chat/kirim file | Chrome/Edge, internet |
 
 ## Mulai cepat: backup HP ke laptop
 
-**Di laptop**
+Pasang APK di HP dulu: unduh [`apk/Sambung-1.1.0-arm64.apk`](apk/Sambung-1.1.0-arm64.apk)
+(buka tautannya di HP lalu tekan *Download*), pasang, dan izinkan "Instal dari sumber tidak dikenal".
+Kalau Play Protect memberi peringatan, pilih "Tetap instal".
+
+### Cara A: tanpa install apa pun di laptop
+
+1. Di laptop, buka **https://chalidade.github.io/remote-anything/** di Chrome atau Edge.
+2. Tekan **Pilih folder** dan pilih folder tujuan backup (misalnya `D:\Backup HP`).
+3. Di HP, buka aplikasi **Sambung** → **Pair dengan laptop** → scan QR di halaman tadi.
+4. Tekan **Backup galeri sekarang**.
+
+HP dan laptop boleh beda jaringan, tapi keduanya butuh internet. Halaman laptop harus tetap
+terbuka selama backup. QR-nya tetap sama setiap kali halaman dibuka, jadi HP tidak perlu scan ulang;
+tekan "Buat QR baru" untuk mencabut akses HP lama.
+
+### Cara B: server di laptop (tanpa internet)
 
 ```bash
 git clone https://github.com/chalidade/remote-anything.git
 cd remote-anything
-npm start            # atau: node server.js
+npm start            # atau klik dua kali start-windows.bat
 ```
 
-Di Windows bisa juga klik dua kali `start-windows.bat`.
-Lalu buka `http://localhost:8080/backup.html`. Muncul QR pairing.
-
-**Di HP**
-
-1. Unduh [`apk/Sambung-1.0.0-arm64.apk`](apk/Sambung-1.0.0-arm64.apk) di HP
-   (buka tautannya lalu tekan *View raw* / *Download*).
-2. Pasang APK (izinkan "Instal dari sumber tidak dikenal"). Kalau Play Protect memberi
-   peringatan, pilih "Tetap instal".
-3. Buka **Sambung**, tekan **Pair dengan laptop**, scan QR di laptop.
-4. Tekan **Backup galeri sekarang**.
-
-HP dan laptop harus di Wi-Fi yang sama (atau laptop tersambung ke hotspot HP).
-Kalau HP tidak bisa menemukan laptop, izinkan Node.js di firewall laptop (jaringan Private).
+Buka `http://localhost:8080/backup.html`, lalu scan QR-nya dari aplikasi. HP dan laptop harus di
+Wi-Fi yang sama (atau laptop tersambung ke hotspot HP). Kalau HP tidak bisa menemukan laptop,
+izinkan Node.js di firewall laptop (jaringan Private).
 
 ### Hasil backup
 
-- Disimpan di `~/SambungBackup/<nama HP>/` dengan struktur folder seperti di HP,
+- Cara A: disimpan di folder pilihanmu, subfolder `<nama HP>/`. Cara B: di `~/SambungBackup/<nama HP>/`.
+  Struktur foldernya sama seperti di HP,
   misalnya `DCIM/Camera/IMG_20261112.jpg`.
   Ganti lokasi: `BACKUP_DIR=/path/folder npm start` (Windows PowerShell: `$env:BACKUP_DIR="D:\Backup"; npm start`).
 - File yang sudah ada (nama dan ukuran sama) dilewati, jadi backup berikutnya hanya mengirim yang baru.
-- "Kirim file ke laptop" menyimpan ke `~/SambungBackup/<nama HP>/Kiriman/`.
-- Kunci pairing disimpan di `~/.sambung-hp.json`. Hapus file itu untuk mencabut semua HP yang sudah pair.
+- "Kirim file ke laptop" menyimpan ke subfolder `<nama HP>/Kiriman/`.
+- Cara B: kunci pairing disimpan di `~/.sambung-hp.json`. Hapus file itu untuk mencabut semua HP yang sudah pair.
 
 ### Batasan versi 1.0
 
@@ -66,6 +71,11 @@ Versi tanpa server (GitHub Pages) langsung bisa dipakai di **https://chalidade.g
 Browser tidak punya API untuk Wi-Fi Direct maupun Wi-Fi Aware, dan Web Bluetooth tidak bisa
 dipakai untuk menyambungkan dua browser. Wi-Fi Direct asli memerlukan aplikasi native
 (`WifiP2pManager` di Android), jadi itu kandidat fitur aplikasi Android berikutnya.
+
+## Pengujian
+
+- `android-app/integration_test/peer_test.dart`: menguji koneksi aplikasi ↔ halaman web (PeerJS + WebRTC),
+  dijalankan sebagai aplikasi Linux desktop terhadap server PeerJS lokal dan halaman `docs/` di Chromium.
 
 ## Build ulang APK
 

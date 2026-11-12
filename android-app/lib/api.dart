@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'transport.dart';
+
 /// Klien HTTP ke server Sambung di laptop.
-class LaptopClient {
+class LaptopClient implements Transport {
   LaptopClient({required this.host, required this.port, required this.token, required this.device});
 
   final String host;
@@ -26,17 +28,19 @@ class LaptopClient {
   }
 
   /// Mengembalikan indeks file yang belum ada di laptop.
-  Future<Set<int>> check(List<({String path, int size})> files) async {
+  @override
+  Future<CheckResult> check(List<({String path, int size})> files) async {
     final req = await _http.postUrl(_u('/api/check'));
     _headers(req);
     req.headers.contentType = ContentType.json;
     req.write(jsonEncode({'files': files.map((f) => {'path': f.path, 'size': f.size}).toList()}));
     final j = await _readJson(await req.close());
-    return (j['need'] as List).cast<int>().toSet();
+    return CheckResult((j['need'] as List).cast<int>().toSet());
   }
 
   /// Upload satu file secara streaming (aman untuk video besar).
   /// Mengembalikan true jika disimpan, false jika dilewati karena sudah ada.
+  @override
   Future<bool> upload(File file, String relPath, {required int size, int? mtimeMs, bool send = false, void Function(int sent)? onProgress}) async {
     final req = await _http.putUrl(_u('/api/upload', {
       'path': relPath,
@@ -57,5 +61,6 @@ class LaptopClient {
     return j['skipped'] != true;
   }
 
+  @override
   void close() => _http.close(force: true);
 }

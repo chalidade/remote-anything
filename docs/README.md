@@ -11,8 +11,14 @@ Jika GitHub Pages aktif (Settings → Pages → branch `main`, folder `/docs`), 
 ## Cara pakai
 
 1. Buka alamat Pages di laptop. Muncul QR.
-2. Scan QR pakai kamera HP, buka tautannya.
+2. Scan QR pakai **kamera HP** (terbuka di browser), atau pakai **aplikasi Sambung** untuk backup galeri.
 3. Status jadi **Terhubung**. Kirim chat atau file dari mana saja.
+
+Untuk backup dari aplikasi, tekan **Pilih folder** dulu di laptop (Chrome/Edge). File dari HP
+langsung ditulis ke folder itu, file yang sudah ada dilewati.
+
+QR berisi ID laptop dan kunci yang disimpan di browser laptop, jadi tetap sama setiap kali
+halaman dibuka. "Buat QR baru" mengganti kuncinya sehingga HP lama tidak bisa menyambung lagi.
 
 Kedua perangkat butuh internet saat pairing. HP dan laptop **tidak harus** di Wi-Fi yang sama.
 
