@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sambung HP ke Laptop</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6feb">
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1b1f24; --muted:#5f6b7a; --line:#dde1e6; --accent:#1f6feb; --ok:#1a7f37; --warn:#9a6700; --me:#dbe9ff; --them:#eef0f3; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1116; --card:#161b22; --text:#e6edf3; --muted:#8d96a0; --line:#30363d; --accent:#4493f8; --ok:#3fb950; --warn:#d29922; --me:#1d3557; --them:#21262d; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:720px; margin:0 auto; padding:16px; }
+  h1 { font-size:1.3rem; margin:8px 0 4px; }
+  .sub { color:var(--muted); margin:0 0 16px; font-size:.95rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .status { display:flex; align-items:center; gap:8px; font-weight:600; }
+  .dot { width:10px; height:10px; border-radius:50%; background:var(--muted); flex:none; }
+  .dot.ok { background:var(--ok); } .dot.warn { background:var(--warn); }
+  .mode { color:var(--muted); font-weight:400; font-size:.9rem; }
+  #qr { display:flex; justify-content:center; margin:12px 0; }
+  #qr svg, #qr img { width:240px; height:240px; background:#fff; padding:8px; border-radius:8px; }
+  .link { word-break:break-all; text-align:center; font-family:ui-monospace,monospace; font-size:.9rem; }
+  select, input[type=text] { font:inherit; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); width:100%; }
+  button, .btn { font:inherit; padding:10px 14px; border:0; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; white-space:nowrap; }
+  button.secondary { background:transparent; color:var(--accent); border:1px solid var(--line); }
+  button:disabled { opacity:.5; cursor:default; }
+  #log { height:45vh; min-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:4px; }
+  .msg { max-width:85%; padding:8px 12px; border-radius:12px; background:var(--them); align-self:flex-start; word-wrap:break-word; }
+  .msg.me { background:var(--me); align-self:flex-end; }
+  .msg.sys { background:none; color:var(--muted); font-size:.85rem; align-self:center; text-align:center; }
+  .msg a { color:var(--accent); }
+  progress { width:100%; }
+  .row { display:flex; gap:8px; margin-top:12px; }
+  .hidden { display:none !important; }
+  .hint { color:var(--muted); font-size:.85rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sambung HP ke Laptop</h1>
+  <p class="sub">Pairing pakai QR, lalu kirim chat dan file langsung antar perangkat (WebRTC).</p>
+
+  <div class="card">
+    <div class="status"><span class="dot" id="dot"></span><span id="status">Menyiapkan…</span> <span class="mode" id="mode"></span></div>
+  </div>
+
+  <div class="card" id="pairCard">
+    <strong>Scan QR ini pakai kamera HP</strong>
+    <div id="qr"></div>
+    <div class="link" id="joinLink"></div>
+    <div id="ipPick" class="hidden" style="margin-top:12px">
+      <label class="hint" for="ipSelect">Laptop punya beberapa jaringan. Pilih yang sama dengan HP:</label>
+      <select id="ipSelect"></select>
+    </div>
+    <p class="hint">HP dan laptop harus di Wi-Fi yang sama, atau laptop tersambung ke hotspot HP (atau sebaliknya).</p>
+  </div>
+
+  <div class="card hidden" id="chatCard">
+    <div id="log"></div>
+    <div class="row">
+      <input type="text" id="text" placeholder="Tulis pesan…" autocomplete="off">
+      <button id="sendBtn">Kirim</button>
+    </div>
+    <div class="row">
+      <input type="file" id="file" multiple class="hidden">
+      <button class="secondary" id="fileBtn">Kirim file</button>
+    </div>
+  </div>
+</main>
+<script src="qrcode.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

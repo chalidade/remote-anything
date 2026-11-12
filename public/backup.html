@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sambung Backup</title>
+<link rel="icon" href="icon.svg">
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1b1f24; --muted:#5f6b7a; --line:#dde1e6; --accent:#1f6feb; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1116; --card:#161b22; --text:#e6edf3; --muted:#8d96a0; --line:#30363d; --accent:#4493f8; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:720px; margin:0 auto; padding:16px; }
+  h1 { font-size:1.3rem; margin:8px 0 4px; }
+  .sub { color:var(--muted); margin:0 0 16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  #qr { display:flex; justify-content:center; margin:12px 0; }
+  #qr svg { width:260px; height:260px; background:#fff; padding:8px; border-radius:8px; }
+  code { font-family:ui-monospace,monospace; font-size:.9rem; word-break:break-all; }
+  ul { list-style:none; padding:0; margin:0; }
+  li { padding:6px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; font-size:.9rem; }
+  li span:last-child { color:var(--muted); white-space:nowrap; }
+  .muted { color:var(--muted); font-size:.9rem; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Backup dari HP</h1>
+  <p class="sub">Buka aplikasi <b>Sambung</b> di HP, tekan <b>Pair dengan laptop</b>, lalu scan QR ini.</p>
+  <div class="card">
+    <div id="qr"></div>
+    <p class="muted" id="err"></p>
+    <p class="muted">Nama laptop: <b id="name">…</b><br>Folder backup: <code id="dir">…</code></p>
+    <p class="muted">QR ini berisi kunci akses ke laptop. Jangan dibagikan. Untuk chat dan kirim file lewat browser, pakai <a href="/">halaman utama</a>.</p>
+  </div>
+  <div class="card">
+    <strong>File terakhir diterima</strong>
+    <ul id="recent"><li class="muted">Belum ada.</li></ul>
+  </div>
+</main>
+<script src="qrcode.js"></script>
+<script>
+  const fmt = (n) => n < 1048576 ? (n / 1024).toFixed(0) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+  fetch('/api/pairinfo').then((r) => r.json()).then((info) => {
+    if (info.error) { document.getElementById('err').textContent = info.error; return; }
+    const qr = qrcode(0, 'M'); qr.addData(info.pairUri); qr.make();
+    document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+    document.getElementById('name').textContent = info.name;
+    document.getElementById('dir').textContent = info.backupDir;
+  });
+  async function refresh() {
+    try {
+      const { recent } = await (await fetch('/api/recent')).json();
+      if (!recent || !recent.length) return;
+      document.getElementById('recent').innerHTML = recent.map((f) =>
+        `<li><span>${f.path.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</span><span>${fmt(f.size)} · ${new Date(f.at).toLocaleTimeString()}</span></li>`).join('');
+    } catch {}
+  }
+  refresh(); setInterval(refresh, 3000);
+</script>
+</body>
+</html>

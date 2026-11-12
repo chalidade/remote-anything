@@ -1,0 +1,9 @@
+{
+  "name": "sambung-laptop",
+  "version": "1.0.0",
+  "description": "Server laptop untuk Sambung: penerima backup HP + web app chat/kirim file",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
